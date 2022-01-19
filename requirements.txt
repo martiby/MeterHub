@@ -1,0 +1,4 @@
+bottle
+waitress
+pyserial
+requests
