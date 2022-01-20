@@ -15,10 +15,11 @@
 # 10.11.2021 Martin Steppuhn    Test mit weiterem MT175
 # 28.11.2021 Martin Steppuhn    neuer Zähler, EMH eHZ
 
-import time
-import serial
-import struct
 import logging
+import struct
+import time
+
+import serial
 
 
 class Sml:
@@ -31,7 +32,6 @@ class Sml:
         self.com = None
         self.rx_buf = bytes()
         self.log.debug("init port:{}".format(port))
-
 
     def calc_crc(self, buffer):
         crc16_x25_table = [
@@ -154,7 +154,7 @@ class Sml:
             pos += 4
             factor = 10 ** struct.unpack("@b", frame[pos:pos + 1])[0]
             pos += 1
-            if frame[pos] == 0x56:    # nur bei EMH eHZ nur 5Byte !!!
+            if frame[pos] == 0x56:  # nur bei EMH eHZ nur 5Byte !!!
                 pos += 1
                 return round(struct.unpack(fmt, b'\x00\x00\x00' + frame[pos: pos + 5])[0] * factor)  # unpack and scale
             else:

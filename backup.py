@@ -1,12 +1,17 @@
 #!/usr/bin/env python3
 #  -*- coding: utf-8 -*-
 
-import os
-import logging
 import io
+import logging
+import os
 import time
 from ftplib import FTP
+
 from bottle import route, response
+
+"""
+ftp_config = {'server': '192.168.0.1', 'user': '', 'password': '', 'path': 'MeterHub-Backup'}
+"""
 
 
 class Backup:
@@ -107,7 +112,7 @@ class Backup:
             ftp.cwd(year)
             ftp.storbinary('STOR {}'.format(filename), bio)  # send the file
             ftp.close()
-            self.log.info("ftp upload {} done in {}s".format(filename, time.perf_counter() - t0))
+            self.log.info("ftp upload {} done in {:.3f}s".format(filename, time.perf_counter() - t0))
         except Exception as e:
             self.log.error("ftp exception: {}".format(e))
 
@@ -141,16 +146,17 @@ def backup_csv():
 
 
 if __name__ == "__main__":
+    import config
+
     logging.basicConfig(
         level=logging.DEBUG,
         format='%(asctime)s %(name)-10s %(levelname)-6s %(message)s',
         datefmt='%Y-%m-%d %H:%M:%S',
     )
 
-    # ftp_config = {'server': '192.168.0.1', 'user': 'fritz.nas.pi', 'password': 'k98_Pi12-kl',
-    #               'path': 'USB_STICK/METER_SERVER_BACKUP'}
+    backup.ftp_config = config.ftp_config
 
-    backup.path = "back_test"
+    backup.path = "backup_test"
     backup.config = ['time', 'timestamp', 'grid_imp_eto', 'grid_exp_eto', 'pv1_eto', 'pv2_eto', 'home_all_eto',
                      'flat_eto',
                      'bat_imp_eto', 'bat_exp_eto', 'car_eto', 'water_vto']

@@ -4,11 +4,11 @@
 # 21.11.2021 Martin Steppuhn    renamed get()
 # 20.01.2022 Martin Steppuhn    cleanup
 
-import requests
 import json
-import time
-import threading
 import logging
+import time
+import requests
+
 
 class Goe:
     def __init__(self, ip_address, timeout=1, lifetime=10, log_name='goe'):
@@ -112,7 +112,6 @@ class Goe:
             return default
 
 
-
 if __name__ == "__main__":
     import time
 
@@ -130,4 +129,3 @@ if __name__ == "__main__":
         wallbox.read()
         # print(wallbox.data)
         time.sleep(2)
-

@@ -2,6 +2,7 @@
 #  -*- coding: utf-8 -*-
 
 import json
+
 from bottle import route, response
 
 
@@ -58,6 +59,7 @@ class Trace:
 
 trace = Trace(size=600)
 
+
 @route("/trace")
 @route("/trace/<size>")
 def trace_set(size=None):
@@ -74,7 +76,6 @@ def trace_json():
 def trace_csv():
     response.content_type = 'text/plain'
     return trace.get_csv()
-
 
 
 if __name__ == "__main__":

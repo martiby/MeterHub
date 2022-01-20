@@ -5,8 +5,8 @@
 # 21.11.2021 Martin Steppuhn    renamed get()
 # 19.01.2022 Martin Steppuhn    Release
 
-import time
 import logging
+import time
 import minimalmodbus
 
 
@@ -82,7 +82,7 @@ class SDM:
                         error = "{}".format(e)
                     time.sleep(0.01)
 
-        if time.perf_counter() < time_timeout:   # valid data received
+        if time.perf_counter() < time_timeout:  # valid data received
             self.lifetime_timeout = t0 + self.lifetime if self.lifetime else None  # set new lifetime timeout
             self.data = data
             self.log.debug("read done in {:.3f}s data: {}".format(time.perf_counter() - t0, data))

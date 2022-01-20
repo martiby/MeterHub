@@ -3,11 +3,11 @@
 
 # 19.01.2022 Martin Steppuhn Release
 
-import requests
 import json
-import time
-import threading
 import logging
+import threading
+import time
+import requests
 
 
 class Symo:
@@ -118,7 +118,6 @@ if __name__ == "__main__":
     while True:
         pv.read()
         time.sleep(1)
-
 
     # 2. threaded read
 

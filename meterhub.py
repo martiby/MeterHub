@@ -23,21 +23,22 @@
      }
 """
 
+import logging
+import threading
 import time
 from datetime import datetime
-import logging
-import json
-import threading
-from bottle import route, run, response
-from trace import trace
-from backup import backup
 
-# Devices
-from sml import Sml  # IP Coupler interface to grid power meter
+from bottle import route, run
+
+from backup import backup
 from eastron import SDM  # Powermeter with Modbus
 from fronius import Symo  # PV Inverter
-from json_request import JsonRequest  # HTTP API for Battery system
 from goe import Goe  # GO-E Wallbox
+from json_request import JsonRequest  # HTTP API for Battery system
+# Devices
+from sml import Sml  # IP Coupler interface to grid power meter
+from trace import trace
+import config
 
 logging.basicConfig(
     level=logging.INFO,
@@ -48,11 +49,13 @@ logging.getLogger("urllib3.connectionpool").setLevel(logging.INFO)  # logging se
 
 data = {}  # actual dataset
 
+
 # === Hooks for Webserver ===
 
 @route("/")
 def index():
     return data
+
 
 # start bottle/waitress webserver thread
 threading.Thread(target=run, kwargs=dict(host='0.0.0.0', port=8008, server='waitress'), daemon=True).start()
@@ -71,16 +74,10 @@ water = JsonRequest('http://192.168.0.24/json', lifetime=10 * 60 + 10, log_name=
 
 pv.start_tread(thread_sleep=0.5)  # read fronius in extra thread
 
-
+backup.ftp_config = config.ftp_config
+backup.save_hour_interval = 1  #  ToDO: zum Test jede Stunde !!!
 backup.config = ['time', 'timestamp', 'grid_imp_eto', 'grid_exp_eto', 'pv1_eto', 'pv2_eto', 'home_all_eto', 'flat_eto',
-                           'bat_imp_eto', 'bat_exp_eto', 'car_eto', 'water_vto']
-
-# backup.ftp = {   ftp_server='192.168.0.1',
-#                 ftp_user='fritz.nas.pi',
-#                 ftp_password='k98_Pi12-kl',
-#                 ftp_path='USB_STICK/METER_SERVER_BACKUP')}
-
-
+                 'bat_imp_eto', 'bat_exp_eto', 'car_eto', 'water_vto']
 
 t_minute = 0
 
@@ -105,8 +102,6 @@ while True:
         'timestamp': int(datetime.utcnow().timestamp()),
 
         # Grid meter
-        'grid_import_eto': sml.get('e_import'),  # MT175  (legacy !!!)
-        'grid_export_eto': sml.get('e_export'),  # MT175  (legacy !!!)
         'grid_imp_eto': sml.get('e_import'),  # MT175
         'grid_exp_eto': sml.get('e_export'),  # MT175
         'grid_p': sml.get('p'),
@@ -122,16 +117,11 @@ while True:
         'home_all_eto': sdm630.get('e_total'),  # SDM630, Haus Gesamtverbrauch
         'home_all_p': sdm630.get('p'),
 
-        'home_eto': sdm630.get('e_total'),  # SDM630, Haus Gesamtverbrauch  (legacy !!!)
-        'home_p': sdm630.get('p'),
-
         # Flat
         'flat_eto': sdm72.get('e_total'),  # SDM72, Einliegerwohnung
         'flat_p': sdm72.get('p'),
 
         # Battery
-        'bat_import_eto': bat.get('bat_e_imp'),  # HomeBattery, Ladung / SDM120
-        'bat_export_eto': bat.get('bat_e_exp'),  # HomeBattery, Einspeisung / SDM120
         'bat_imp_eto': bat.get('bat_e_imp'),  # HomeBattery, Ladung / SDM120
         'bat_exp_eto': bat.get('bat_e_exp'),  # HomeBattery, Einspeisung / SDM120
         'bat_soc': bat.get('bat_soc'),  # HomeBattery, SOC
@@ -152,7 +142,7 @@ while True:
     }
 
     trace.push(data)  # save dataset to trace module
-    backup.push(data)   # save 5min Dataset to local Backup (additional to FTP)
+    backup.push(data)  # save 5min Dataset to local Backup (additional to FTP)
 
     while int(t0) == int(time.perf_counter()):  # update not faster than once a second
         time.sleep(0.1)

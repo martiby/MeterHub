@@ -1,4 +1,4 @@
 bottle
 waitress
-pyserial
+pyserial>=3.0
 requests
