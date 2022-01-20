@@ -144,6 +144,12 @@ def backup_csv():
     response.content_type = 'text/plain'
     return backup.csv_buffer()
 
+@route("/backup/save")
+def backup_save():
+    backup.save()
+    return "backup saved"
+
+
 
 if __name__ == "__main__":
     import config
