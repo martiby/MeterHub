@@ -6,6 +6,26 @@ are available for different applications via a common interface.
 Applications based on this are e.g.: Visualisation and databases, solar-controlled wallboxes, battery storage, ... 
 The application is written in Python and usually runs on a Raspberry Pi. The specific configuration is defined directly in meterhub.py.
 
+## Example:
+
+  http://home:8008/
+
+    {
+      "time": "2022-01-23 00:08:38", 
+      "grid_imp_eto": 3985744,
+      "grid_exp_eto": 18804181, 
+      "grid_p": 513, 
+      "pv1_eto": 16152530, 
+      "pv1_p": 0, 
+      "car_eto": 735688, 
+      "car_p": 0,  
+      "car_amp": 6, 
+      "car_phase": 1,  
+      "car_state": "complete", 
+      "water_vto": 1130154, 
+      ...
+    }
+
 # Supported devices:
 
 * Solar inverters
