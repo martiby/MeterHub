@@ -27,9 +27,7 @@ import logging
 import threading
 import time
 from datetime import datetime
-
 from bottle import route, run
-
 from backup import backup
 from eastron import SDM  # Powermeter with Modbus
 from fronius import Symo  # PV Inverter
@@ -40,12 +38,14 @@ from sml import Sml  # IP Coupler interface to grid power meter
 from trace import trace
 import config
 
+__name__ = "MeterHub"
+__version__ = "0.9.1"
+
 logging.basicConfig(
     level=logging.INFO,
     format='%(asctime)s %(name)-10s %(levelname)-6s %(message)s',
     datefmt='%Y-%m-%d %H:%M:%S',
 )
-logging.getLogger("urllib3.connectionpool").setLevel(logging.INFO)  # logging setup for request library
 
 data = {}  # actual dataset
 
@@ -55,6 +55,11 @@ data = {}  # actual dataset
 @route("/")
 def index():
     return data
+
+@route("/version")
+def version():
+    return __name__ + ' V' + __version__
+
 
 
 # start bottle/waitress webserver thread
@@ -75,7 +80,7 @@ water = JsonRequest('http://192.168.0.24/json', lifetime=10 * 60 + 10, log_name=
 pv.start_tread(thread_sleep=0.5)  # read fronius in extra thread
 
 backup.ftp_config = config.ftp_config
-backup.save_hour_interval = 1  #  ToDO: zum Test jede Stunde !!!
+backup.save_hour_interval = 6
 backup.config = ['time', 'timestamp', 'grid_imp_eto', 'grid_exp_eto', 'pv1_eto', 'pv2_eto', 'home_all_eto', 'flat_eto',
                  'bat_imp_eto', 'bat_exp_eto', 'car_eto', 'water_vto']
 

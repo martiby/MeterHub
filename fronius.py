@@ -13,7 +13,7 @@ import requests
 class Symo:
     def __init__(self, ip_address, timeout=5, lifetime=10, log_name='symo'):
         """
-        Symo API Interface    (without network read fails without timeout)
+        Fronius Symo API Interface    (without network read fails without timeout)
 
         :param ip_address:  IP-Address
         :param timeout:     Timeout in seconds for request

@@ -2,11 +2,20 @@
 #  -*- coding: utf-8 -*-
 
 import json
-
 from bottle import route, response
 
-
 class Trace:
+    """
+    Trace for MeterHub
+
+    The individual measurements are saved in a list. The length can be changed at runtime.
+    The trace buffer is available as CSV or JSON via the web server.
+
+    /trace/<SIZE>
+    /trace/csv
+    /trace/json
+    """
+
     def __init__(self, size=0):
         self.size = None
         self.set_size(size)
@@ -27,12 +36,6 @@ class Trace:
         """
         if isinstance(size, int) and size >= 0:
             self.size = size
-
-    # def get(self):
-    #     """
-    #     Get trace data as dictionary
-    #     """
-    #     return self.data
 
     def get_csv(self, columns=None):
         """

@@ -9,12 +9,21 @@ from ftplib import FTP
 
 from bottle import route, response
 
-"""
-ftp_config = {'server': '192.168.0.1', 'user': '', 'password': '', 'path': 'MeterHub-Backup'}
-"""
-
 
 class Backup:
+    """
+    Backup for MeterHub
+
+    Cyclic saving of the data set and saving as CSV file. Saving is done locally and optionally via FTP upload.
+
+    Options:
+    data_minute_interval = 5            # store interval in minutes (CSV-Row)
+    save_hour_interval = 6              # file save interval in hours (file and ftp save)
+    config = ['time', 'home_eto', ...]  # list with keys saved from data
+    ftp_config = None                   # None or ftp configuration
+    ftp_config = {'server': '192.168.0.1', 'user': '', 'password': '', 'path': 'MeterHub-Backup'}
+    """
+
     def __init__(self):
         self.path = 'backup'  # default path
         self.data_minute_interval = 5  # minutes
@@ -31,7 +40,7 @@ class Backup:
 
     def push(self, data):
         """
-
+        Process dataset (dictionary)
         """
         if not isinstance(self.config, (list, type)):  # abort without config
             return
@@ -78,7 +87,7 @@ class Backup:
 
     def save_to_file(self):
         """
-        Save current CSV-Buffer to file
+        Save CSV-Buffer to file
         """
         try:
             filename = self.csv_date + '.csv'  # filename  "2022-01-17.csv
@@ -90,6 +99,9 @@ class Backup:
             self.log.error("save exception: {}".format(e))
 
     def save_to_ftp(self):
+        """
+        Upload CSV File to FTP
+        """
         try:
             t0 = time.perf_counter()
             filename = self.csv_date + '.csv'
@@ -144,14 +156,17 @@ def backup_csv():
     response.content_type = 'text/plain'
     return backup.csv_buffer()
 
+
 @route("/backup/save")
 def backup_save():
     backup.save()
     return "backup saved"
 
 
-
 if __name__ == "__main__":
+    """
+    Simple Test for backup module
+    """
     import config
 
     logging.basicConfig(
@@ -159,14 +174,9 @@ if __name__ == "__main__":
         format='%(asctime)s %(name)-10s %(levelname)-6s %(message)s',
         datefmt='%Y-%m-%d %H:%M:%S',
     )
-
     backup.ftp_config = config.ftp_config
-
     backup.path = "backup_test"
-    backup.config = ['time', 'timestamp', 'grid_imp_eto', 'grid_exp_eto', 'pv1_eto', 'pv2_eto', 'home_all_eto',
-                     'flat_eto',
-                     'bat_imp_eto', 'bat_exp_eto', 'car_eto', 'water_vto']
-
+    backup.config = ['time', 'timestamp', 'grid_imp_eto', 'home_all_eto']
     backup.push({'time': '2021-05-20 12:05:00', 'home_all_eto': 1})
     backup.push({'time': '2021-05-20 12:10:00', 'home_all_eto': 2})
     backup.push({'time': '2021-05-20 18:20:00', 'home_all_eto': 3})
