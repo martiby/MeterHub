@@ -1,12 +1,10 @@
 #!/usr/bin/env python3
 #  -*- coding: utf-8 -*-
 
-# 21.11.2021    Martin Steppuhn
-# 08.01.2021    Martin Steppuhn     JSON Backup with FTP Push
-# 15.01.2022    Martin Steppuhn     Renamed to meterio
+# 23.01.2022    Martin Steppuhn     MeterHub project bundle
 
 """
-    meterhub
+    MeterHub
 
     Combine all data sources (electricity meter, inverter, wallbox, etc.) and make them available via an HTTP API.
 
