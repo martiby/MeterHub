@@ -6,7 +6,6 @@ import logging
 import os
 import time
 from ftplib import FTP
-
 from bottle import route, response
 
 

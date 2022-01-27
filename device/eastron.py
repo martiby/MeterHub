@@ -7,7 +7,10 @@
 
 import logging
 import time
-import minimalmodbus
+try:
+    from device import minimalmodbus
+except:
+    import minimalmodbus
 
 
 class SDM:
@@ -125,7 +128,7 @@ if __name__ == "__main__":
         datefmt='%Y-%m-%d %H:%M:%S',
     )
 
-    sdm120 = SDM('/dev/ttyUSB0', type="SDM120", address=2, lifetime=5, log_name='sdm120')
+    sdm120 = SDM('/dev/ttyUSB1', type="SDM120", address=2, lifetime=5, log_name='sdm120')
     while True:
         data = sdm120.read(['p', 'e_import', 'e_export'])
         # print(data, sdm120.data)

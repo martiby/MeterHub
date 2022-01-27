@@ -18,9 +18,7 @@
 import logging
 import struct
 import time
-
 import serial
-
 
 class Sml:
     def __init__(self, port=None, lifetime=10, log_name='sml'):

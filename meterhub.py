@@ -26,18 +26,20 @@ import threading
 import time
 from datetime import datetime
 from bottle import route, run
-from backup import backup
-from eastron import SDM  # Powermeter with Modbus
-from fronius import Symo  # PV Inverter
-from goe import Goe  # GO-E Wallbox
-from json_request import JsonRequest  # HTTP API for Battery system
+# Project source
+from utils.trace import trace
+from utils.backup import backup
 # Devices
-from sml import Sml  # IP Coupler interface to grid power meter
-from trace import trace
+from device.eastron import SDM  # Powermeter with Modbus
+from device.fronius import Symo  # PV Inverter
+from device.goe import Goe  # GO-E Wallbox
+from device.json_request import JsonRequest  # HTTP API for Battery system
+from device.sml import Sml  # IP Coupler interface to grid power meter
+
 import config
 
 __name__ = "MeterHub"
-__version__ = "0.9.1"
+__version__ = "0.9.2"
 
 logging.basicConfig(
     level=logging.INFO,
