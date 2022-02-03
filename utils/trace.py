@@ -36,6 +36,7 @@ class Trace:
         """
         if isinstance(size, int) and size >= 0:
             self.size = size
+        return self.size
 
     def get_csv(self, columns=None):
         """

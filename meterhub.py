@@ -73,11 +73,12 @@ sml = Sml(port=sml_port, lifetime=10, log_name='mt175')
 sdm630 = SDM(sdm_port, type="SDM630", address=1, lifetime=10, log_name='sdm630')
 sdm72 = SDM(sdm_port, type="SDM72", address=3, lifetime=10, log_name='sdm72')
 pv = Symo('192.168.0.20', log_name='fronius')
-goe = Goe('192.168.0.25', log_name='goe')
+goe = Goe('192.168.0.25', log_name='goe', lifetime=30)   # 30sec because of weak WiFi
 bat = JsonRequest('http://192.168.0.10:8888/api/data', lifetime=10, log_name='bat')  # PyBattery
 water = JsonRequest('http://192.168.0.24/json', lifetime=10 * 60 + 10, log_name='water')  # Water-Meter
 
 pv.start_tread(thread_sleep=0.5)  # read fronius in extra thread
+
 
 backup.ftp_config = config.ftp_config
 backup.save_hour_interval = 6
