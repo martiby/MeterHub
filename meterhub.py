@@ -32,7 +32,6 @@ from utils.backup import backup
 # Devices
 from device.eastron import SDM  # Powermeter with Modbus
 from device.fronius import Symo  # PV Inverter
-# from device.goe import Goe  # GO-E Wallbox
 from device.goe_api_v2 import GoeApiV2  # GO-E Wallbox
 from device.json_request import JsonRequest  # HTTP API for Battery system
 from device.sml import Sml  # IP Coupler interface to grid power meter
@@ -40,7 +39,7 @@ from device.sml import Sml  # IP Coupler interface to grid power meter
 import config
 
 __name__ = "MeterHub"
-__version__ = "0.9.2"
+__version__ = "0.9.3"
 
 logging.basicConfig(
     level=logging.INFO,
