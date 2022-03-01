@@ -32,7 +32,8 @@ from utils.backup import backup
 # Devices
 from device.eastron import SDM  # Powermeter with Modbus
 from device.fronius import Symo  # PV Inverter
-from device.goe import Goe  # GO-E Wallbox
+# from device.goe import Goe  # GO-E Wallbox
+from device.goe_api_v2 import GoeApiV2  # GO-E Wallbox
 from device.json_request import JsonRequest  # HTTP API for Battery system
 from device.sml import Sml  # IP Coupler interface to grid power meter
 
@@ -73,7 +74,7 @@ sml = Sml(port=sml_port, lifetime=10, log_name='mt175')
 sdm630 = SDM(sdm_port, type="SDM630", address=1, lifetime=10, log_name='sdm630')
 sdm72 = SDM(sdm_port, type="SDM72", address=3, lifetime=10, log_name='sdm72')
 pv = Symo('192.168.0.20', log_name='fronius')
-goe = Goe('192.168.0.25', log_name='goe', lifetime=30)   # 30sec because of weak WiFi
+goe = GoeApiV2('192.168.0.25', log_name='goe', lifetime=30)   # 30sec because of weak WiFi
 bat = JsonRequest('http://192.168.0.10:8888/api/data', lifetime=10, log_name='bat')  # PyBattery
 water = JsonRequest('http://192.168.0.24/json', lifetime=10 * 60 + 10, log_name='water')  # Water-Meter
 

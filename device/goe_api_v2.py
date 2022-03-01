@@ -1,16 +1,16 @@
 #!/usr/bin/env python3
 #  -*- coding: utf-8 -*-
 
-# 21.11.2021 Martin Steppuhn    renamed get()
-# 20.01.2022 Martin Steppuhn    cleanup
+# 1.03.2022  Martin Steppuhn
 
-import json
-import logging
-import time
 import requests
+import json
+import time
+import threading
+import logging
 
 
-class Goe:
+class GoeApiV2:
     def __init__(self, ip_address, timeout=1, lifetime=10, log_name='goe'):
         """
         :param ip_address:  IP-Address
@@ -38,8 +38,11 @@ class Goe:
             resp = requests.get(url, timeout=self.timeout)
             if resp.status_code == 200:
                 r = json.loads(resp.content)
+                # print(r)
                 d = {}
+
                 d['amp'] = r.get('amp', None)
+
                 if r.get('fsp', None) == True:  # fsp = force single phase
                     d['phase'] = 1
                 elif r.get('fsp', None) == False:  # fsp = force single phase
@@ -82,7 +85,7 @@ class Goe:
                 self.data = d
                 self.log.debug("read done in {:.3f}s data: {}".format(time.perf_counter() - t0, d))
             else:
-                raise ValueError("status_code={} url={}".format(resp.status_code, url))
+                raise ValueError("failed with status_code={}".format(resp.status_code))
 
         except Exception as e:
             self.log.debug("read failed {:.3f}s error: {}".format(time.perf_counter() - t0, e))
@@ -111,6 +114,77 @@ class Goe:
         except:
             return default
 
+    def set_amp(self, amp):
+        self.log.debug("set_amp() amp={}".format(amp))
+        try:
+            r = requests.get('http://{}/api/set?amp={}'.format(self.ip_address, amp), timeout=1)
+            if r.status_code == 200:
+                data = json.loads(r.content)
+                return True
+            else:
+                raise ValueError("failed with status_code={}".format(r.status_code))
+        except Exception as e:
+            self.log.error("set_amp() exception: {}".format(e))
+            return False
+
+    def stop(self):
+        self.log.debug("stop()")
+        try:
+            r = requests.get('http://{}/api/set?frc=1&amp=6'.format(self.ip_address), timeout=1)
+            if r.status_code == 200:
+                data = json.loads(r.content)
+                return True
+            else:
+                raise ValueError("failed with status_code={}".format(r.status_code))
+        except Exception as e:
+            self.log.error("force_off() exception: {}".format(e))
+            return False
+
+    def release(self):
+        self.log.debug("release()")
+        try:
+            # r = requests.get('http://{}/api/set?frc=0&amp=6'.format(self.ip_address), timeout=1)
+            r = requests.get('http://{}/api/set?frc=0'.format(self.ip_address), timeout=1)
+            if r.status_code == 200:
+                data = json.loads(r.content)
+                return True
+            else:
+                raise ValueError("failed with status_code={}".format(r.status_code))
+        except Exception as e:
+            self.log.error("release_off() exception: {}".format(e))
+            return False
+
+    # def set_color(self, mode, rgb):
+    #     """
+    #     cid 	R/W 	string 	Config 	color_idle, format: #RRGGBB
+    #     cwc 	R/W 	string 	Config 	color_waitcar, format: #RRGGBB
+    #     cch 	R/W 	string 	Config 	color_charging, format: #RRGGBB
+    #     cfi 	R/W 	string 	Config 	color_finished, format: #RRGGBB
+    #
+    #     http://192.168.0.25/api/set?cid=%22%2300FF00%22
+    #
+    #     :param rgb:
+    #     :return:
+    #     """
+    #
+    #     cmds = {"idle": "cid", "wait": "cwc", "charge":"cch", "complete": "cfi"}
+    #
+    #     self.log.debug("set_color()")
+    #     try:
+    #         r = requests.get('http://{}/api/set?cid=%22%23{}%22'.format(led, rgb), timeout=1)
+    #         if r.status_code == 200:
+    #             # data = json.loads(r.content)
+    #             pass
+    #         else:
+    #             raise ValueError("failed with status_code={}".format(r.status_code))
+    #     except Exception as e:
+    #         self.log.error("set_color exception: {}".format(e))
+
+
+
+
+
+
 
 if __name__ == "__main__":
     import time
@@ -123,9 +197,11 @@ if __name__ == "__main__":
 
     logging.getLogger("goe").setLevel(logging.DEBUG)
 
-    wallbox = Goe('192.168.0.25', timeout=5, lifetime=10)
+    wallbox = GoeApiV2('192.168.0.25', timeout=5, lifetime=10)
 
     while True:
         wallbox.read()
-        # print(wallbox.data)
+        time.sleep(0.1)
+        print(wallbox.data)
         time.sleep(2)
+
