@@ -2,12 +2,20 @@
 #  -*- coding: utf-8 -*-
 
 # 1.03.2022  Martin Steppuhn
+# 7.4.2022   New set structure
 
-import requests
 import json
-import time
-import threading
 import logging
+import requests
+
+"""
+
+http://192.168.0.25/api/set?psm=1    3 --> 1
+http://192.168.0.25/api/set?psm=2    1 --> 3
+
+{"psm":true}
+
+"""
 
 
 class GoeApiV2:
@@ -114,76 +122,45 @@ class GoeApiV2:
         except:
             return default
 
-    def set_amp(self, amp):
-        self.log.debug("set_amp() amp={}".format(amp))
-        try:
-            r = requests.get('http://{}/api/set?amp={}'.format(self.ip_address, amp), timeout=1)
-            if r.status_code == 200:
-                data = json.loads(r.content)
-                return True
-            else:
-                raise ValueError("failed with status_code={}".format(r.status_code))
-        except Exception as e:
-            self.log.error("set_amp() exception: {}".format(e))
-            return False
+    def set(self, stop=None, amp=None, phase=None):
+        """
+        cmd= amp=6&frc=0&psm=1
+        api/set?amp=6&frc=0&psm=1
 
-    def stop(self):
-        self.log.debug("stop()")
-        try:
-            r = requests.get('http://{}/api/set?frc=1&amp=6'.format(self.ip_address), timeout=1)
-            if r.status_code == 200:
-                data = json.loads(r.content)
-                return True
-            else:
-                raise ValueError("failed with status_code={}".format(r.status_code))
-        except Exception as e:
-            self.log.error("force_off() exception: {}".format(e))
-            return False
+        amp=1..16   1..16 Ampere
+        frc=0,1     0=force release, 1=force stop
+        psm=1,2     1=1-Phase 2=3-Phase
+        """
+        cmd = []
+        if amp is not None and 6 <= amp <= 16:
+            cmd.append('amp={}'.format(amp))
 
-    def release(self):
-        self.log.debug("release()")
-        try:
-            # r = requests.get('http://{}/api/set?frc=0&amp=6'.format(self.ip_address), timeout=1)
-            r = requests.get('http://{}/api/set?frc=0'.format(self.ip_address), timeout=1)
-            if r.status_code == 200:
-                data = json.loads(r.content)
-                return True
-            else:
-                raise ValueError("failed with status_code={}".format(r.status_code))
-        except Exception as e:
-            self.log.error("release_off() exception: {}".format(e))
-            return False
+        if stop is True:
+            cmd.append('frc=1')
+        elif stop is False:
+            cmd.append('frc=0')
 
-    # def set_color(self, mode, rgb):
-    #     """
-    #     cid 	R/W 	string 	Config 	color_idle, format: #RRGGBB
-    #     cwc 	R/W 	string 	Config 	color_waitcar, format: #RRGGBB
-    #     cch 	R/W 	string 	Config 	color_charging, format: #RRGGBB
-    #     cfi 	R/W 	string 	Config 	color_finished, format: #RRGGBB
-    #
-    #     http://192.168.0.25/api/set?cid=%22%2300FF00%22
-    #
-    #     :param rgb:
-    #     :return:
-    #     """
-    #
-    #     cmds = {"idle": "cid", "wait": "cwc", "charge":"cch", "complete": "cfi"}
-    #
-    #     self.log.debug("set_color()")
-    #     try:
-    #         r = requests.get('http://{}/api/set?cid=%22%23{}%22'.format(led, rgb), timeout=1)
-    #         if r.status_code == 200:
-    #             # data = json.loads(r.content)
-    #             pass
-    #         else:
-    #             raise ValueError("failed with status_code={}".format(r.status_code))
-    #     except Exception as e:
-    #         self.log.error("set_color exception: {}".format(e))
+        if phase is not None and phase == 1:
+            cmd.append('psm=1')
+        if phase is not None and phase == 3:
+            cmd.append('psm=2')
 
+        if cmd:
+            cmd = "&".join(cmd)
 
-
-
-
+            self.log.info("set cmd: {}".format(cmd))
+            try:
+                r = requests.get('http://{}/api/set?{}'.format(self.ip_address, cmd), timeout=1)
+                if r.status_code == 200:  # {"amp":true}
+                    data = json.loads(r.content)
+                    return True
+                else:
+                    raise ValueError("failed with status_code={}".format(r.status_code))
+            except Exception as e:
+                self.log.error("set exception: {}".format(e))
+                return False
+        else:
+            self.log.error("no set cmd: {}".format(cmd))
 
 
 if __name__ == "__main__":
@@ -204,4 +181,3 @@ if __name__ == "__main__":
         time.sleep(0.1)
         print(wallbox.data)
         time.sleep(2)
-

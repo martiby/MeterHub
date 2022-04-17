@@ -25,21 +25,22 @@ import logging
 import threading
 import time
 from datetime import datetime
-from bottle import route, run
-# Project source
-from utils.trace import trace
-from utils.backup import backup
+
+from bottle import route, run, request
+
+import config
 # Devices
 from device.eastron import SDM  # Powermeter with Modbus
 from device.fronius import Symo  # PV Inverter
 from device.goe_api_v2 import GoeApiV2  # GO-E Wallbox
 from device.json_request import JsonRequest  # HTTP API for Battery system
 from device.sml import Sml  # IP Coupler interface to grid power meter
-
-import config
+from utils.backup import backup
+# Project source
+from utils.trace import trace
 
 __name__ = "MeterHub"
-__version__ = "0.9.3"
+__version__ = "0.9.5"
 
 logging.basicConfig(
     level=logging.INFO,
@@ -59,6 +60,31 @@ def index():
 @route("/version")
 def version():
     return __name__ + ' V' + __version__
+
+
+@route("/goe/set")
+def wallbox_set():
+    global wallbox_cmd
+
+    wallbox_cmd = {'stop': None, 'phase': None, 'amp': None}
+    if request.query.get('stop', None) in ('0', 'false', 'False'):
+        wallbox_cmd['stop'] = False
+    if request.query.get('stop', None) in ('1', 'true', 'True'):
+        wallbox_cmd['stop'] = True
+
+    if request.query.get('phase', None) == '1':
+        wallbox_cmd['phase'] = 1
+    if request.query.get('phase', None) == '3':
+        wallbox_cmd['phase'] = 3
+
+    amp = request.query.get('amp', None)
+    if amp in ('6', '7', '8', '9', '10', '11', '12', '13', '14', '15', '16'):
+        wallbox_cmd['amp'] = int(amp)
+
+    return wallbox_cmd
+
+
+
 
 
 
@@ -86,11 +112,21 @@ backup.config = ['time', 'timestamp', 'grid_imp_eto', 'grid_exp_eto', 'pv1_eto',
                  'bat_imp_eto', 'bat_exp_eto', 'car_eto', 'water_vto']
 
 t_minute = 0
+wallbox_cmd = None
 
 # main loop
 
 while True:
     t0 = time.perf_counter()  # store start time
+
+    # wallbox write !!!
+
+    if wallbox_cmd:
+        if not goe.set(**wallbox_cmd):  # if failed
+            goe.set(**wallbox_cmd)  # second try
+        wallbox_cmd = None
+
+
     sdm630.read(['p', 'e_total'])  # home  (legacy e_total, import is better)
     sdm72.read(['p', 'e_total'])  # flat  (legacy e_total, import is better)
     sml.read()  # read IR coupler
@@ -140,7 +176,8 @@ while True:
         'car_e_cycle': goe.get('e_cycle'),
         'car_amp': goe.get('amp'),
         'car_phase': goe.get('phase'),
-        'car_force_stop': goe.get('stop'),
+        # 'car_force_stop': goe.get('stop'),
+        'car_stop': goe.get('stop'),
         'car_state': goe.get('state'),
 
         # Water
