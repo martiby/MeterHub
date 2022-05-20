@@ -7,7 +7,7 @@
 import json
 import logging
 import requests
-
+import time
 """
 
 http://192.168.0.25/api/set?psm=1    3 --> 1
@@ -68,7 +68,14 @@ class GoeApiV2:
                 except:
                     d['p'] = None
 
-                d['stop'] = (r.get('frc', None) == 1)
+                # d['stop'] = (r.get('frc', None) == 1)  # until 25.04.2022
+
+                if r.get('frc', None) == 1:
+                    d['stop'] = True
+                elif r.get('frc', None) == 0:
+                    d['stop'] = False
+                else:
+                    d['stop'] = r.get('frc', None)
 
                 try:
                     d['e_cycle'] = round(r['wh'])
